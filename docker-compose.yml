@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: projectgo-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: projectgo
+      MYSQL_USER: projectuser
+      MYSQL_PASSWORD: projectpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    networks:
+      - projectgo-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ==========================================
+  # API - Desenvolvimento (hot reload)
+  # ==========================================
+  api:
+    build:
+      context: ./Api
+      dockerfile: Dockerfile.dev
+    container_name: projectgo-api-dev
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./Api/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./Api:/app
+    networks:
+      - projectgo-net
+
+  # ==========================================
+  # MIGRAÇÕES
+  # ==========================================
+  migrate:
+    image: mysql:8.0
+    container_name: projectgo-migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./Api/migrations:/migrations
+      - ./Api/migrate.sh:/migrate.sh
+    entrypoint: ["/bin/bash", "/migrate.sh"]
+    networks:
+      - projectgo-net
+
+networks:
+  projectgo-net:
+    driver: bridge

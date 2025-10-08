@@ -1,0 +1,108 @@
+@baseUrl = http://localhost:8080
+
+### ========================================
+### LOGIN - USUÁRIO ENZO (ADMIN)
+### ========================================
+
+# Login com o usuário real do banco
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "enzo@email.com",
+  "senha": "1234"
+}
+
+###
+# Após rodar a requisição acima, copie o valor do token retornado
+# e substitua o conteúdo de {{token}} abaixo.
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OSwiZW1haWwiOiJlbnpvQGVtYWlsLmNvbSIsInRpcG8iOiJhZG1pbiIsImlzcyI6IlByb2plY3RHb0FQSSIsImV4cCI6MTc1OTk1ODAzMCwiaWF0IjoxNzU5ODcxNjMwfQ.3gMsubzjAkk0UbukYoDghPp-4ytOPBHo5iRMi39M7sw
+### ========================================
+### TESTES DE AUTENTICAÇÃO (JWT)
+### ========================================
+
+# 1️⃣ Rota protegida SEM token → deve retornar 401 (não autorizado)
+GET {{baseUrl}}/vendas
+
+###
+# 2️⃣ Rota protegida COM token → deve retornar 200 e listar as vendas
+GET {{baseUrl}}/vendas
+Authorization: Bearer {{token}}
+
+###
+# 3️⃣ Rota aberta (não precisa de token) → deve funcionar
+GET {{baseUrl}}/usuarios
+
+
+### ========================================
+### PRODUTOS (rotas protegidas)
+### ========================================
+
+# Listar produtos (GET protegido)
+GET {{baseUrl}}/produtos
+Authorization: Bearer {{token}}
+
+###
+# Criar produto (POST protegido)
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nome": "Teclado Mecânico RGB",
+  "descricao": "Teclado ABNT2 retroiluminado",
+  "preco": 349.90,
+  "estoque": 8
+}
+
+
+### ========================================
+### VENDAS (rotas protegidas)
+### ========================================
+
+# Criar nova venda associada ao Enzo
+POST {{baseUrl}}/vendas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "id_usuario": 9,
+  "total": 599.99,
+  "status": "pago"
+}
+
+###
+# Listar vendas (GET protegido)
+GET {{baseUrl}}/vendas
+Authorization: Bearer {{token}}
+
+
+### ========================================
+### ITENS DE VENDA (rotas protegidas)
+### ========================================
+
+# Criar item de venda vinculado à venda e produto existentes
+POST {{baseUrl}}/itens_venda
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "id_venda": 3,
+  "id_produto": 2,
+  "quantidade": 2,
+  "preco_unitario": 299.99
+}
+
+###
+# Listar itens de venda
+GET {{baseUrl}}/itens_venda
+Authorization: Bearer {{token}}
+
+
+### ========================================
+### VIEW COMBINADA - VENDAS DETALHADAS (protegida)
+### ========================================
+
+# Lista completa de vendas detalhadas com produtos e clientes
+GET {{baseUrl}}/vendas_detalhadas
+Authorization: Bearer {{token}}

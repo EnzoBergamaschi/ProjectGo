@@ -1,0 +1,38 @@
+# --- Backend (Go) ---
+/Api/tmp/
+/Api/mysql-data/
+/Api/bin/
+/Api/.air.toml
+*.log
+
+# Arquivos de ambiente (nunca versionar)
+.env
+*.env
+.env.*
+
+# Docker
+
+*.pid
+docker-compose.override.yml
+
+# --- Frontend (React + Vite + Node) ---
+/Web/node_modules/
+/Web/dist/
+/Web/.env
+/Web/.env.*
+
+# IDEs e OS
+.vscode/
+.idea/
+*.iml
+*.DS_Store
+Thumbs.db
+
+# Outros
+*.sql
+*.sql.gz
+*.sql.gpg
+
+# Ignorar os dados binários do MySQL
+/mysql-data/
+
