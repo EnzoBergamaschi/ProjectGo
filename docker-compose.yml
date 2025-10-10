@@ -1,4 +1,4 @@
-# Compose simplificado e atualizado (sem 'version:' pois é obsoleto)
+
 services:
   db:
     image: mysql:8.0
@@ -16,14 +16,11 @@ services:
     networks:
       - projectgo-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
       interval: 5s
       timeout: 3s
       retries: 10
 
-  # ============================
-  # API (Go + Air hot reload)
-  # ============================
   api:
     build:
       context: ./Api
@@ -41,24 +38,6 @@ services:
       - ./Api/.air.toml:/app/.air.toml
     networks:
       - projectgo-net
-
-  # ============================
-  # MIGRAÇÕES (executa scripts SQL)
-  # ============================
-  migrate:
-    image: mysql:8.0
-    container_name: projectgo-migrate
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./Api/migrations:/migrations
-      - ./Api/migrate.sh:/migrate.sh
-    entrypoint: ["/bin/bash", "/migrate.sh"]
-    networks:
-      - projectgo-net
-
 networks:
   projectgo-net:
     driver: bridge
-  

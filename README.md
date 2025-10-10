@@ -5,17 +5,31 @@ Este foi meu primeiro readme,desculpa qualquer dor de cabeça.
 1. Clonar o repositório
 
 git clone https://github.com/EnzoBergamaschi/ProjectGo.git
-
 cd ProjectGo
 
 2. Construir e subir os containers do backend (API + MySQL)
 
-Na raiz do projeto, execute:
-> docker compose up --build api
+docker compose up -d
 
-Esses comandos criam e sobem os containers do MySQL e da API Go, montando o banco de dados e iniciando a API automaticamente.
+docker compose build api
 
-3. Rodar o frontend (Web)
+docker compose up --build api
+
+3. Aplicar as migrations (criar as tabelas do banco)
+
+Após o MySQL estar rodando, entre no container do banco:
+
+docker exec -it projectgo-db mysql -u root -prootpass projectgo
+
+Agora, copie e cole o conteúdo do arquivo SQL localizado em: #Tentei deixar automatico mas nao deu.
+
+Api/migrations/001_migrate.sql
+
+lembrando que neste migrate 
+
+-- Cria o administrador padrão (senha: 1234) (admin@email.com)
+
+4. Rodar o frontend (Web)
 
 Entre na pasta Web:
 cd Web
