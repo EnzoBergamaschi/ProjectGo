@@ -1,19 +1,17 @@
-# Imagem leve com Go e suporte a build dinâmico
+# ================================
+# Dockerfile.dev — Ambiente de desenvolvimento com Air
+# ================================
 FROM golang:1.25-alpine
 
 WORKDIR /app
 
-# Copia dependências
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copia o código
 COPY . .
 
-# Instala o air (auto reload)
 RUN go install github.com/air-verse/air@latest
 
 EXPOSE 8080
 
-# Usa air para recompilar e rodar automaticamente
 CMD ["air", "-c", ".air.toml"]

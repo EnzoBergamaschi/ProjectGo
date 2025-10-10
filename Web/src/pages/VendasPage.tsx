@@ -30,18 +30,19 @@ export default function VendasPage() {
   async function carregarVendas() {
     try {
       const vendasData = await listarVendas();
-      setVendas(vendasData);
+      setVendas(Array.isArray(vendasData) ? vendasData : []); 
     } catch {
       setErro("Erro ao carregar vendas.");
+      setVendas([]); 
     }
   }
 
   async function carregarUsuarios() {
     try {
       const usuariosData = await listarUsuarios();
-      setUsuarios(usuariosData);
+      setUsuarios(Array.isArray(usuariosData) ? usuariosData : []);
     } catch {
-      // usuários só carregam se admin
+      setUsuarios([]);
     }
   }
 
@@ -121,11 +122,12 @@ export default function VendasPage() {
               required
             >
               <option value={0}>Selecione o usuário</option>
-              {usuarios.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome} ({u.email})
-                </option>
-              ))}
+              {Array.isArray(usuarios) &&
+                usuarios.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nome} ({u.email})
+                  </option>
+                ))}
             </select>
 
             <select
@@ -153,7 +155,6 @@ export default function VendasPage() {
             Acesso negado: apenas administradores podem adicionar novas vendas.
           </p>
         )}
-
         <table className="w-full border-collapse bg-slate-800 rounded-lg shadow-lg">
           <thead>
             <tr className="bg-slate-700">
@@ -165,39 +166,39 @@ export default function VendasPage() {
             </tr>
           </thead>
           <tbody>
-            {vendas.map((v) => (
-              <tr key={v.id} className="border-t border-slate-600">
-                <td className="p-3">{v.id}</td>
-                <td className="p-3">{v.usuario_nome || "—"}</td>
-                <td className="p-3 capitalize">{v.status}</td>
-                <td className="p-3">R$ {v.total.toFixed(2)}</td>
-                {isAdmin && (
-                  <td className="p-3 flex gap-2 justify-center">
-                    <button
-                      onClick={() => {
-                        setEditando(v);
-                        setNovaVenda({
-                          id_usuario: v.id_usuario,
-                          status: v.status,
-                          total: v.total,
-                        });
-                      }}
-                      className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(v.id!)}
-                      className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded font-semibold"
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-
-            {vendas.length === 0 && (
+            {Array.isArray(vendas) && vendas.length > 0 ? (
+              vendas.map((v) => (
+                <tr key={v.id} className="border-t border-slate-600">
+                  <td className="p-3">{v.id}</td>
+                  <td className="p-3">{v.usuario_nome || "—"}</td>
+                  <td className="p-3 capitalize">{v.status}</td>
+                  <td className="p-3">R$ {v.total.toFixed(2)}</td>
+                  {isAdmin && (
+                    <td className="p-3 flex gap-2 justify-center">
+                      <button
+                        onClick={() => {
+                          setEditando(v);
+                          setNovaVenda({
+                            id_usuario: v.id_usuario,
+                            status: v.status,
+                            total: v.total,
+                          });
+                        }}
+                        className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(v.id!)}
+                        className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded font-semibold"
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))
+            ) : (
               <tr>
                 <td
                   colSpan={isAdmin ? 5 : 4}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ func (h *VendaHandler) Listar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao listar vendas: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(vendas)
 }
@@ -56,13 +58,17 @@ func (h *VendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
 	if err := h.dao.Criar(input.IDUsuario, 0, input.Status); err != nil {
+		log.Printf("Erro ao criar venda: %v", err)
 		http.Error(w, "Erro ao criar venda: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Venda criada com sucesso"))
+	json.NewEncoder(w).Encode(map[string]string{
+		"mensagem": "Venda criada com sucesso",
+	})
 }
 func (h *VendaHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/vendas/")
@@ -94,12 +100,14 @@ func (h *VendaHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.dao.Atualizar(id, input.IDUsuario, 0, input.Status); err != nil {
+		log.Printf("Erro ao atualizar venda: %v", err)
 		http.Error(w, "Erro ao atualizar venda: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Venda atualizada com sucesso"))
+	json.NewEncoder(w).Encode(map[string]string{
+		"mensagem": "Venda atualizada com sucesso",
+	})
 }
 func (h *VendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/vendas/")
@@ -110,10 +118,13 @@ func (h *VendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.dao.Deletar(id); err != nil {
+		log.Printf("Erro ao deletar venda: %v", err)
 		http.Error(w, "Erro ao deletar venda: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Venda deletada com sucesso"))
+	json.NewEncoder(w).Encode(map[string]string{
+		"mensagem": "Venda deletada com sucesso",
+	})
 }

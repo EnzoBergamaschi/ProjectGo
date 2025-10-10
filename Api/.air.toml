@@ -1,0 +1,29 @@
+# ============================
+# Configuração do Air (hot reload)
+# ============================
+
+# Diretório raiz do projeto (dentro do container)
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Compila a partir do caminho real do main.go
+cmd = "go build -o ./tmp/main ./cmd/api"
+bin = "tmp/main"
+full_bin = "./tmp/main"
+
+# Arquivos que o Air observa
+include_ext = ["go"]
+
+# Pastas ignoradas
+exclude_dir = ["vendor", "tmp", "mysql-data", "migrations"]
+
+# Tempo de debounce (em ms)
+delay = 1000
+
+# Logs coloridos e sem timestamp
+log_color = true
+log_time = false
+
+[env]
+PORT = "8080"

@@ -8,6 +8,7 @@ import {
   deletarProduto,
   type Produto,
 } from "../services/produtoService";
+import { getUserRole } from "../services/authService";
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -20,22 +21,29 @@ export default function ProdutosPage() {
   const [erro, setErro] = useState("");
   const navigate = useNavigate();
 
+  const role = getUserRole();
+  const isAdmin = role === "admin";
   async function carregarProdutos() {
     try {
       const data = await listarProdutos();
-      setProdutos(data);
+      setProdutos(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error(err);
       setErro("Erro ao carregar produtos (verifique o token ou permissões).");
+      setProdutos([]);
     }
   }
 
   useEffect(() => {
     carregarProdutos();
   }, []);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isAdmin) {
+      setErro("Acesso negado: apenas administradores podem adicionar produtos.");
+      return;
+    }
+
     try {
       const produtoFormatado = {
         nome: novoProduto.nome,
@@ -57,9 +65,13 @@ export default function ProdutosPage() {
       setErro("Erro ao salvar produto.");
     }
   }
-
   async function handleDelete(id: number) {
+    if (!isAdmin) {
+      setErro("Acesso negado: apenas administradores podem excluir produtos.");
+      return;
+    }
     if (!confirm("Deseja realmente excluir este produto?")) return;
+
     try {
       await deletarProduto(id);
       carregarProdutos();
@@ -83,76 +95,80 @@ export default function ProdutosPage() {
 
         <h1 className="text-3xl font-bold mb-4">Gerenciar Produtos</h1>
         {erro && <p className="text-red-400 mb-4">{erro}</p>}
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-slate-800 p-6 rounded-lg mb-8 shadow-lg space-y-4"
-        >
-          <h2 className="text-xl font-semibold mb-2">
-            {editando ? "Editar Produto" : "Novo Produto"}
-          </h2>
-
-          <div>
-            <label className="block mb-1 text-sm font-semibold text-gray-300">
-              Nome do Produto
-            </label>
-            <input
-              type="text"
-              placeholder="Ex: Teclado Mecânico RGB"
-              value={novoProduto.nome}
-              onChange={(e) =>
-                setNovoProduto({ ...novoProduto, nome: e.target.value })
-              }
-              className="w-full p-2 rounded bg-slate-700 focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm font-semibold text-gray-300">
-              Preço (em R$)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Ex: 199.90"
-              value={novoProduto.preco}
-              onChange={(e) =>
-                setNovoProduto({ ...novoProduto, preco: e.target.value })
-              }
-              className="w-full p-2 rounded bg-slate-700 focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm font-semibold text-gray-300">
-              Quantidade em Estoque
-            </label>
-            <input
-              type="number"
-              placeholder="Ex: 10"
-              value={novoProduto.estoque}
-              onChange={(e) =>
-                setNovoProduto({ ...novoProduto, estoque: e.target.value })
-              }
-              className="w-full p-2 rounded bg-slate-700 focus:outline-none"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className={`${
-              editando
-                ? "bg-yellow-500 hover:bg-yellow-400 text-black"
-                : "bg-blue-600 hover:bg-blue-500 text-white"
-            } px-4 py-2 rounded font-semibold transition`}
+        {isAdmin ? (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-slate-800 p-6 rounded-lg mb-8 shadow-lg space-y-4"
           >
-            {editando ? "Salvar Alterações" : "Adicionar Produto"}
-          </button>
-        </form>
+            <h2 className="text-xl font-semibold mb-2">
+              {editando ? "Editar Produto" : "Novo Produto"}
+            </h2>
 
+            <div>
+              <label className="block mb-1 text-sm font-semibold text-gray-300">
+                Nome do Produto
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Teclado Mecânico RGB"
+                value={novoProduto.nome}
+                onChange={(e) =>
+                  setNovoProduto({ ...novoProduto, nome: e.target.value })
+                }
+                className="w-full p-2 rounded bg-slate-700 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm font-semibold text-gray-300">
+                Preço (em R$)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Ex: 199.90"
+                value={novoProduto.preco}
+                onChange={(e) =>
+                  setNovoProduto({ ...novoProduto, preco: e.target.value })
+                }
+                className="w-full p-2 rounded bg-slate-700 focus:outline-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm font-semibold text-gray-300">
+                Quantidade em Estoque
+              </label>
+              <input
+                type="number"
+                placeholder="Ex: 10"
+                value={novoProduto.estoque}
+                onChange={(e) =>
+                  setNovoProduto({ ...novoProduto, estoque: e.target.value })
+                }
+                className="w-full p-2 rounded bg-slate-700 focus:outline-none"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className={`${
+                editando
+                  ? "bg-yellow-500 hover:bg-yellow-400 text-black"
+                  : "bg-blue-600 hover:bg-blue-500 text-white"
+              } px-4 py-2 rounded font-semibold transition`}
+            >
+              {editando ? "Salvar Alterações" : "Adicionar Produto"}
+            </button>
+          </form>
+        ) : (
+          <p className="text-red-400 mb-8">
+            Acesso negado: apenas administradores podem adicionar novos produtos.
+          </p>
+        )}
         <table className="w-full border-collapse bg-slate-800 rounded-lg shadow-lg">
           <thead>
             <tr className="bg-slate-700">
@@ -160,44 +176,49 @@ export default function ProdutosPage() {
               <th className="p-3 text-left">Nome</th>
               <th className="p-3 text-left">Preço</th>
               <th className="p-3 text-left">Estoque</th>
-              <th className="p-3 text-center">Ações</th>
+              {isAdmin && <th className="p-3 text-center">Ações</th>}
             </tr>
           </thead>
           <tbody>
-            {produtos.map((p) => (
-              <tr key={p.id} className="border-t border-slate-600">
-                <td className="p-3">{p.id}</td>
-                <td className="p-3">{p.nome}</td>
-                <td className="p-3">R$ {p.preco.toFixed(2)}</td>
-                <td className="p-3">{p.estoque}</td>
-                <td className="p-3 flex gap-2 justify-center">
-                  <button
-                    onClick={() => {
-                      setEditando(p);
-                      setNovoProduto({
-                        nome: p.nome,
-                        preco: p.preco.toString(),
-                        estoque: p.estoque.toString(),
-                      });
-                    }}
-                    className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
-                  >
-                    Editar
-                  </button>
+            {produtos.length > 0 ? (
+              produtos.map((p) => (
+                <tr key={p.id} className="border-t border-slate-600">
+                  <td className="p-3">{p.id}</td>
+                  <td className="p-3">{p.nome}</td>
+                  <td className="p-3">R$ {p.preco.toFixed(2)}</td>
+                  <td className="p-3">{p.estoque}</td>
+                  {isAdmin && (
+                    <td className="p-3 flex gap-2 justify-center">
+                      <button
+                        onClick={() => {
+                          setEditando(p);
+                          setNovoProduto({
+                            nome: p.nome,
+                            preco: p.preco.toString(),
+                            estoque: p.estoque.toString(),
+                          });
+                        }}
+                        className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
+                      >
+                        Editar
+                      </button>
 
-                  <button
-                    onClick={() => handleDelete(p.id!)}
-                    className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded font-semibold"
-                  >
-                    Excluir
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {produtos.length === 0 && (
+                      <button
+                        onClick={() => handleDelete(p.id!)}
+                        className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded font-semibold"
+                      >
+                        Excluir
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan={5} className="text-center p-4 text-gray-400">
+                <td
+                  colSpan={isAdmin ? 5 : 4}
+                  className="text-center p-4 text-gray-400"
+                >
                   Nenhum produto encontrado.
                 </td>
               </tr>

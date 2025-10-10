@@ -11,10 +11,8 @@ export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota pública */}
         <Route path="/" element={<Login />} />
 
-        {/* Rota protegida com layout */}
         <Route
           element={
             <ProtectedRoute>

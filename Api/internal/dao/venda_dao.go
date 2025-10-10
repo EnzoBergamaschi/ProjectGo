@@ -46,13 +46,16 @@ func (v *VendaDAO) Criar(idUsuario int, total float64, status string) error {
 	if idUsuario <= 0 {
 		return fmt.Errorf("id_usuario inválido")
 	}
+
 	_, err := v.DB.Exec(`
 		INSERT INTO vendas (id_usuario, total, status)
-		VALUES (?, 0, ?)
-	`, idUsuario, status)
+		VALUES (?, ?, ?)
+	`, idUsuario, total, status)
+
 	if err != nil {
 		return fmt.Errorf("erro ao criar venda: %w", err)
 	}
+
 	return nil
 }
 func (v *VendaDAO) Atualizar(id, idUsuario int, total float64, status string) error {
@@ -68,6 +71,7 @@ func (v *VendaDAO) Atualizar(id, idUsuario int, total float64, status string) er
 	if err != nil {
 		return fmt.Errorf("erro ao atualizar venda: %w", err)
 	}
+
 	if err := v.AtualizarTotalPelosItens(id); err != nil {
 		return fmt.Errorf("erro ao recalcular total: %w", err)
 	}
