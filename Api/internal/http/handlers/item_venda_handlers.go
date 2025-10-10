@@ -21,10 +21,6 @@ func NovoItemVendaHandler(db *sql.DB) *ItemVendaHandler {
 		db:  db,
 	}
 }
-
-// ============================================================
-// LISTAR ITENS DE UMA VENDA
-// ============================================================
 func (h *ItemVendaHandler) ListarPorVenda(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/itens_venda/")
 	idVenda, err := strconv.Atoi(idStr)
@@ -42,10 +38,6 @@ func (h *ItemVendaHandler) ListarPorVenda(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(itens)
 }
-
-// ============================================================
-// ADICIONAR ITEM
-// ============================================================
 func (h *ItemVendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		IDVenda       int     `json:"id_venda"`
@@ -68,8 +60,6 @@ func (h *ItemVendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao criar item: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// 🔄 Atualiza automaticamente o total da venda
 	vendaDAO := dao.NovaVendaDAO(h.db)
 	if err := vendaDAO.AtualizarTotalPelosItens(input.IDVenda); err != nil {
 		http.Error(w, "Erro ao atualizar total da venda: "+err.Error(), http.StatusInternalServerError)
@@ -79,10 +69,6 @@ func (h *ItemVendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Item adicionado com sucesso"))
 }
-
-// ============================================================
-// DELETAR ITEM
-// ============================================================
 func (h *ItemVendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/itens_venda/")
 	id, err := strconv.Atoi(idStr)
@@ -90,8 +76,6 @@ func (h *ItemVendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID inválido", http.StatusBadRequest)
 		return
 	}
-
-	// Recupera o id_venda do item antes de excluir
 	idVenda, err := h.dao.BuscarIDVendaPorItem(id)
 	if err != nil {
 		http.Error(w, "Erro ao buscar venda do item: "+err.Error(), http.StatusInternalServerError)
@@ -102,8 +86,6 @@ func (h *ItemVendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro ao deletar item: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// 🔄 Atualiza automaticamente o total da venda
 	vendaDAO := dao.NovaVendaDAO(h.db)
 	if err := vendaDAO.AtualizarTotalPelosItens(idVenda); err != nil {
 		http.Error(w, "Erro ao atualizar total da venda: "+err.Error(), http.StatusInternalServerError)

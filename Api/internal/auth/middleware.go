@@ -13,7 +13,6 @@ const (
 	userTipoKey contextKey = "usuario_tipo"
 )
 
-// MiddlewareAutenticacao valida o token JWT e injeta o usuário no contexto
 func MiddlewareAutenticacao(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")

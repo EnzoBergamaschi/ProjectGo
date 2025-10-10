@@ -9,18 +9,27 @@ interface LoginResponse {
   token: string;
 }
 
-// Faz login e retorna o token JWT
 export async function loginUser(data: LoginData): Promise<LoginResponse> {
   const response = await api.post<LoginResponse>("/login", data);
   return response.data;
 }
 
-// Exemplo de função auxiliar para logout
 export function logoutUser() {
   localStorage.removeItem("token");
 }
 
-// Exemplo de verificação de login
 export function isAuthenticated(): boolean {
   return !!localStorage.getItem("token");
+}
+
+export function getUserRole(): string | null {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.tipo || payload.role || null;
+  } catch {
+    return null;
+  }
 }

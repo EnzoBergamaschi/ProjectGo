@@ -13,7 +13,7 @@ import {
 interface Props {
   idVenda: number;
   onClose: () => void;
-  onAtualizarVendas: () => void; // 🔹 nova prop
+  onAtualizarVendas: () => void; 
 }
 
 export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: Props) {
@@ -26,10 +26,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
     preco_unitario: 0,
   });
   const [erro, setErro] = useState("");
-
-  // ===============================================
-  // CARREGAR ITENS E PRODUTOS
-  // ===============================================
   async function carregarDados() {
     try {
       const produtosData = await listarProdutos();
@@ -47,10 +43,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
   useEffect(() => {
     carregarDados();
   }, [idVenda]);
-
-  // ===============================================
-  // ADICIONAR ITEM
-  // ===============================================
   async function handleAdd() {
     setErro("");
 
@@ -79,30 +71,22 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
       });
 
       await carregarDados();
-      await onAtualizarVendas(); // 🔹 atualiza total na tabela principal
+      await onAtualizarVendas(); 
     } catch (err) {
       console.error(err);
       setErro("Erro ao adicionar item.");
     }
   }
-
-  // ===============================================
-  // EXCLUIR ITEM
-  // ===============================================
   async function handleDelete(id: number) {
     try {
       await deletarItem(id);
       await carregarDados();
-      await onAtualizarVendas(); // 🔹 atualiza total na tabela principal
+      await onAtualizarVendas();
     } catch (err) {
       console.error(err);
       setErro("Erro ao excluir item.");
     }
   }
-
-  // ===============================================
-  // CALCULAR TOTAL LOCAL
-  // ===============================================
   function calcularTotal(): number {
     if (!Array.isArray(itens) || itens.length === 0) return 0;
     return itens.reduce((acc, item) => {
@@ -114,9 +98,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
 
   const total = calcularTotal();
 
-  // ===============================================
-  // RESETAR AO FECHAR
-  // ===============================================
   function handleFechar() {
     setItens([]);
     setNovoItem({
@@ -127,10 +108,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
     });
     onClose();
   }
-
-  // ===============================================
-  // RENDER
-  // ===============================================
   return (
     <div className="bg-slate-800 p-6 rounded-xl shadow-lg mt-6">
       <div className="flex justify-between items-center mb-4">
@@ -147,7 +124,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
 
       {erro && <p className="text-red-400 mb-2">{erro}</p>}
 
-      {/* Formulário de novo item */}
       <div className="flex gap-2 mb-4">
         <select
           value={novoItem.id_produto}
@@ -183,7 +159,6 @@ export default function ItensVendaForm({ idVenda, onClose, onAtualizarVendas }: 
         </button>
       </div>
 
-      {/* Tabela de itens */}
       <table className="w-full border-collapse bg-slate-900 rounded-lg shadow">
         <thead>
           <tr className="bg-slate-700">

@@ -32,23 +32,19 @@ func main() {
 	server := &http.Server{
 		Addr: addr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			// Cabeçalhos de CORS sempre aplicados
+
 			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-			// Intercepta absolutamente todos os OPTIONS
 			if req.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusOK)
 				return
 			}
-
-			// Passa para o roteador
 			r.ServeHTTP(w, req)
 		}),
 	}
-
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Erro ao iniciar servidor: %v", err)
 	}

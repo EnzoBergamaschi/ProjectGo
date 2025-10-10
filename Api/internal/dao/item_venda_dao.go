@@ -20,10 +20,6 @@ type ItemVendaDAO struct {
 func NovoItemVendaDAO(db *sql.DB) *ItemVendaDAO {
 	return &ItemVendaDAO{DB: db}
 }
-
-// ============================================================
-// LISTAR TODOS OS ITENS
-// ============================================================
 func (d *ItemVendaDAO) Listar() ([]ItemVenda, error) {
 	rows, err := d.DB.Query(`
 		SELECT id, id_venda, id_produto, quantidade, preco_unitario
@@ -45,10 +41,6 @@ func (d *ItemVendaDAO) Listar() ([]ItemVenda, error) {
 	}
 	return itens, nil
 }
-
-// ============================================================
-// LISTAR ITENS POR ID DA VENDA
-// ============================================================
 func (d *ItemVendaDAO) ListarPorVenda(idVenda int) ([]ItemVenda, error) {
 	if idVenda <= 0 {
 		return nil, fmt.Errorf("id_venda inválido")
@@ -75,10 +67,6 @@ func (d *ItemVendaDAO) ListarPorVenda(idVenda int) ([]ItemVenda, error) {
 	}
 	return itens, nil
 }
-
-// ============================================================
-// CRIAR ITEM
-// ============================================================
 func (d *ItemVendaDAO) Criar(idVenda, idProduto, quantidade int, precoUnitario float64) error {
 	if idVenda <= 0 || idProduto <= 0 || quantidade <= 0 || precoUnitario <= 0 {
 		return fmt.Errorf("dados inválidos ao criar item de venda")
@@ -95,10 +83,6 @@ func (d *ItemVendaDAO) Criar(idVenda, idProduto, quantidade int, precoUnitario f
 
 	return nil
 }
-
-// ============================================================
-// ATUALIZAR ITEM
-// ============================================================
 func (d *ItemVendaDAO) Atualizar(id, idVenda, idProduto, quantidade int, precoUnitario float64) error {
 	if id <= 0 {
 		return fmt.Errorf("id inválido para atualização de item")
@@ -116,10 +100,6 @@ func (d *ItemVendaDAO) Atualizar(id, idVenda, idProduto, quantidade int, precoUn
 
 	return nil
 }
-
-// ============================================================
-// DELETAR ITEM
-// ============================================================
 func (d *ItemVendaDAO) Deletar(id int) error {
 	if id <= 0 {
 		return fmt.Errorf("id inválido para exclusão de item")
@@ -132,10 +112,6 @@ func (d *ItemVendaDAO) Deletar(id int) error {
 
 	return nil
 }
-
-// ============================================================
-// BUSCAR ID DA VENDA PELO ID DO ITEM
-// ============================================================
 func (d *ItemVendaDAO) BuscarIDVendaPorItem(idItem int) (int, error) {
 	var idVenda int
 	err := d.DB.QueryRow(`

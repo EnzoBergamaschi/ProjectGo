@@ -26,10 +26,6 @@ type VendaDetalhadaDAO struct {
 func NovaVendaDetalhadaDAO(db *sql.DB) *VendaDetalhadaDAO {
 	return &VendaDetalhadaDAO{DB: db}
 }
-
-// =======================================================
-// LISTAR TODAS AS VENDAS (ADMIN)
-// =======================================================
 func (v *VendaDetalhadaDAO) Listar() ([]VendaDetalhada, error) {
 	vendaRows, err := v.DB.Query(`
 		SELECT v.id, u.nome, v.status, v.total
@@ -75,10 +71,6 @@ func (v *VendaDetalhadaDAO) Listar() ([]VendaDetalhada, error) {
 
 	return vendas, nil
 }
-
-// =======================================================
-// LISTAR APENAS AS VENDAS DO USUÁRIO AUTENTICADO
-// =======================================================
 func (v *VendaDetalhadaDAO) ListarPorUsuario(userID int) ([]VendaDetalhada, error) {
 	vendaRows, err := v.DB.Query(`
 		SELECT v.id, u.nome, v.status, v.total

@@ -9,7 +9,6 @@ import (
 var jwtSecret []byte
 var jwtExpHours = 24
 
-// Configura o segredo e tempo de expiração do token JWT
 func Configure(secret string, expHours int) {
 	jwtSecret = []byte(secret)
 	if expHours > 0 {
@@ -17,7 +16,6 @@ func Configure(secret string, expHours int) {
 	}
 }
 
-// Claims representa as informações contidas no token JWT
 type Claims struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`
@@ -25,7 +23,6 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// GerarJWT cria um token JWT com ID, email e tipo de usuário (admin/cliente)
 func GerarJWT(id int, email, tipo string) (string, error) {
 	claims := &Claims{
 		ID:    id,
@@ -41,8 +38,6 @@ func GerarJWT(id int, email, tipo string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
 }
-
-// ValidarJWT valida o token JWT e retorna as claims (dados do usuário)
 func ValidarJWT(tokenStr string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil

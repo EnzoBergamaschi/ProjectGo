@@ -12,9 +12,6 @@ import (
 func New(db *sql.DB) http.Handler {
 	mux := http.NewServeMux()
 
-	// ============================================================
-	// Função wrapper global de CORS
-	// ============================================================
 	corsWrapper := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -22,7 +19,6 @@ func New(db *sql.DB) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-			// ✅ se for preflight, responde direto
 			if r.Method == http.MethodOptions {
 				w.WriteHeader(http.StatusOK)
 				return
@@ -31,20 +27,12 @@ func New(db *sql.DB) http.Handler {
 			next(w, r)
 		}
 	}
-
-	// ============================================================
-	// ROTAS DE STATUS
-	// ============================================================
 	mux.HandleFunc("/", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "API do ProjectGo está rodando!")
 	}))
 	mux.HandleFunc("/health", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	}))
-
-	// ============================================================
-	// USUÁRIOS
-	// ============================================================
 	usuarioHandler := handlers.NovoUsuarioHandler(db)
 	mux.HandleFunc("/usuarios", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -66,10 +54,6 @@ func New(db *sql.DB) http.Handler {
 			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		}
 	})))
-
-	// ============================================================
-	// PRODUTOS
-	// ============================================================
 	produtoHandler := handlers.NovoProdutoHandler(db)
 	mux.HandleFunc("/produtos", corsWrapper(auth.MiddlewareAutenticacao(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -91,10 +75,6 @@ func New(db *sql.DB) http.Handler {
 			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		}
 	})))
-
-	// ============================================================
-	// VENDAS
-	// ============================================================
 	vendaHandler := handlers.NovaVendaHandler(db)
 	mux.HandleFunc("/vendas", corsWrapper(auth.MiddlewareAutenticacao(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -116,13 +96,8 @@ func New(db *sql.DB) http.Handler {
 			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		}
 	})))
-
-	// ============================================================
-	// ITENS DE VENDA (corrigido)
-	// ============================================================
 	itemVendaHandler := handlers.NovoItemVendaHandler(db)
 
-	// ✅ POST cria item (rota simples)
 	mux.HandleFunc("/itens_venda", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
@@ -138,8 +113,6 @@ func New(db *sql.DB) http.Handler {
 			}
 		})(w, r)
 	}))
-
-	// ✅ GET lista por venda / DELETE remove item
 	mux.HandleFunc("/itens_venda/", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
@@ -157,10 +130,6 @@ func New(db *sql.DB) http.Handler {
 			}
 		})(w, r)
 	}))
-
-	// ============================================================
-	// VIEW DE VENDAS DETALHADAS
-	// ============================================================
 	vendaDetalhadaHandler := handlers.NovaVendaDetalhadaHandler(db)
 	mux.HandleFunc("/vendas_detalhadas", corsWrapper(auth.MiddlewareAutenticacao(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -169,10 +138,6 @@ func New(db *sql.DB) http.Handler {
 			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		}
 	})))
-
-	// ============================================================
-	// LOGIN
-	// ============================================================
 	authHandler := handlers.NovoAuthHandler(db)
 	mux.HandleFunc("/login", corsWrapper(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
@@ -181,9 +146,5 @@ func New(db *sql.DB) http.Handler {
 		}
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 	}))
-
-	// ============================================================
-	// Retorna o roteador completo
-	// ============================================================
 	return mux
 }

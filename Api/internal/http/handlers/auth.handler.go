@@ -43,29 +43,21 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Erro interno", http.StatusInternalServerError)
 		return
 	}
-
-	// Validação da senha usando bcrypt
 	if !auth.ValidarSenha(usuario.SenhaHash, input.Senha) {
 		http.Error(w, "Senha incorreta", http.StatusUnauthorized)
 		return
 	}
-
-	// DEBUG opcional — verifique se o tipo está vindo corretamente
 	fmt.Println("DEBUG: login de usuário =", usuario.Email, "| tipo =", usuario.Tipo)
 
-	// Gera token com ID, email e tipo
 	token, err := auth.GerarJWT(usuario.ID, usuario.Email, usuario.Tipo)
 	if err != nil {
 		http.Error(w, "Erro ao gerar token", http.StatusInternalServerError)
 		return
 	}
-
-	// Cabeçalhos CORS e tipo de conteúdo
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-	// Resposta JSON com token e dados do usuário
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"token": token,
 		"user": map[string]interface{}{

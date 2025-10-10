@@ -20,10 +20,6 @@ type VendaDAO struct {
 func NovaVendaDAO(db *sql.DB) *VendaDAO {
 	return &VendaDAO{DB: db}
 }
-
-// ============================================================
-// LISTAR todas as vendas com nome do usuário
-// ============================================================
 func (v *VendaDAO) Listar() ([]Venda, error) {
 	rows, err := v.DB.Query(`
 		SELECT ve.id, ve.id_usuario, u.nome AS usuario_nome, ve.total, ve.status
@@ -46,16 +42,10 @@ func (v *VendaDAO) Listar() ([]Venda, error) {
 	}
 	return vendas, nil
 }
-
-// ============================================================
-// CRIAR nova venda
-// ============================================================
 func (v *VendaDAO) Criar(idUsuario int, total float64, status string) error {
 	if idUsuario <= 0 {
 		return fmt.Errorf("id_usuario inválido")
 	}
-
-	// Ao criar uma venda, ignora o total passado (deixa o backend recalcular)
 	_, err := v.DB.Exec(`
 		INSERT INTO vendas (id_usuario, total, status)
 		VALUES (?, 0, ?)
@@ -65,16 +55,10 @@ func (v *VendaDAO) Criar(idUsuario int, total float64, status string) error {
 	}
 	return nil
 }
-
-// ============================================================
-// ATUALIZAR venda
-// ============================================================
 func (v *VendaDAO) Atualizar(id, idUsuario int, total float64, status string) error {
 	if id <= 0 {
 		return fmt.Errorf("id inválido")
 	}
-
-	// Atualiza apenas o status e o usuário. O total é recalculado pelos itens.
 	_, err := v.DB.Exec(`
 		UPDATE vendas
 		SET id_usuario = ?, status = ?
@@ -84,18 +68,12 @@ func (v *VendaDAO) Atualizar(id, idUsuario int, total float64, status string) er
 	if err != nil {
 		return fmt.Errorf("erro ao atualizar venda: %w", err)
 	}
-
-	// Garante que o total fique sincronizado com os itens
 	if err := v.AtualizarTotalPelosItens(id); err != nil {
 		return fmt.Errorf("erro ao recalcular total: %w", err)
 	}
 
 	return nil
 }
-
-// ============================================================
-// DELETAR venda
-// ============================================================
 func (v *VendaDAO) Deletar(id int) error {
 	if id <= 0 {
 		return fmt.Errorf("id inválido")
@@ -106,10 +84,6 @@ func (v *VendaDAO) Deletar(id int) error {
 	}
 	return nil
 }
-
-// ============================================================
-// REATUALIZAR total com base nos itens da venda
-// ============================================================
 func (v *VendaDAO) AtualizarTotalPelosItens(idVenda int) error {
 	if idVenda <= 0 {
 		return fmt.Errorf("id_venda inválido")

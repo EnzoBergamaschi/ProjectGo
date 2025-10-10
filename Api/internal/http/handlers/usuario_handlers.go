@@ -18,10 +18,6 @@ type UsuarioHandler struct {
 func NovoUsuarioHandler(db *sql.DB) *UsuarioHandler {
 	return &UsuarioHandler{dao: dao.NovoUsuarioDAO(db)}
 }
-
-// =========================================
-// LISTAR USUÁRIOS
-// =========================================
 func (h *UsuarioHandler) Listar(w http.ResponseWriter, r *http.Request) {
 	usuarios, err := h.dao.Listar()
 	if err != nil {
@@ -32,10 +28,6 @@ func (h *UsuarioHandler) Listar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(usuarios)
 }
-
-// =========================================
-// CRIAR NOVO USUÁRIO
-// =========================================
 func (h *UsuarioHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Nome  string `json:"nome"`
@@ -75,10 +67,6 @@ func (h *UsuarioHandler) Criar(w http.ResponseWriter, r *http.Request) {
 		"mensagem": "Usuário criado com sucesso",
 	})
 }
-
-// =========================================
-// ATUALIZAR USUÁRIO
-// =========================================
 func (h *UsuarioHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/usuarios/")
 	id, err := strconv.Atoi(idStr)
@@ -103,8 +91,6 @@ func (h *UsuarioHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Campos obrigatórios ausentes", http.StatusBadRequest)
 		return
 	}
-
-	// Atualiza com ou sem senha
 	if strings.TrimSpace(input.Senha) != "" {
 		hash, err := auth.GerarHashSenha(input.Senha)
 		if err != nil {
@@ -127,10 +113,6 @@ func (h *UsuarioHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"mensagem": "Usuário atualizado com sucesso"})
 }
-
-// =========================================
-// DELETAR USUÁRIO
-// =========================================
 func (h *UsuarioHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/usuarios/")
 	id, err := strconv.Atoi(idStr)

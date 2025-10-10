@@ -18,7 +18,7 @@ export interface UpdateUsuarioData {
   nome: string;
   email: string;
   tipo: string;
-  senha?: string; // opcional
+  senha?: string; 
 }
 
 export async function registerUser(data: RegisterData): Promise<Usuario> {
@@ -40,8 +40,6 @@ export async function deletarUsuario(id: number): Promise<void> {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
-
-// ✅ novo: atualizar usuário (sem senha ou com senha opcional)
 export async function atualizarUsuario(
   id: number,
   data: UpdateUsuarioData

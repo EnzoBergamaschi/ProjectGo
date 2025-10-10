@@ -13,11 +13,8 @@ export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
-
-  // feedback visual
   const [mensagem, setMensagem] = useState<string | null>(null);
 
-  // modal criar
   const [showCreate, setShowCreate] = useState(false);
   const [novoUsuario, setNovoUsuario] = useState({
     nome: "",
@@ -26,15 +23,17 @@ export default function UsuariosPage() {
     tipo: "cliente",
   });
 
-  // modal editar
   const [showEdit, setShowEdit] = useState(false);
   const [editUserId, setEditUserId] = useState<number | null>(null);
   const [formEdicao, setFormEdicao] = useState({
     nome: "",
     email: "",
     tipo: "cliente",
-    senha: "", // opcional (se quiser trocar)
+    senha: "",
   });
+
+  // Fonte da verdade de permissão: resultado da API
+  const [canManage, setCanManage] = useState<boolean | null>(null);
 
   const navigate = useNavigate();
 
@@ -43,12 +42,25 @@ export default function UsuariosPage() {
   }, []);
 
   async function carregarUsuarios() {
+    setLoading(true);
+    setErro("");
     try {
       const data = await listarUsuarios();
       setUsuarios(data);
-    } catch (error) {
+      setCanManage(true); // é admin
+    } catch (error: any) {
       console.error("Erro ao listar usuários:", error);
-      setErro("Erro ao carregar usuários.");
+
+      if (error?.response?.status === 403) {
+        setErro("Acesso negado: apenas administradores podem gerenciar usuários.");
+        setCanManage(false);
+      } else if (error?.response?.status === 401) {
+        setErro("Sessão expirada. Faça login novamente.");
+        setCanManage(false);
+      } else {
+        setErro("Erro ao carregar usuários.");
+        setCanManage(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -62,8 +74,8 @@ export default function UsuariosPage() {
       setMensagem("Usuário excluído com sucesso!");
       setTimeout(() => setMensagem(null), 3000);
     } catch (error) {
-      alert("Erro ao excluir usuário");
       console.error(error);
+      alert("Erro ao excluir usuário");
     }
   }
 
@@ -74,7 +86,6 @@ export default function UsuariosPage() {
       setShowCreate(false);
       setNovoUsuario({ nome: "", email: "", senha: "", tipo: "cliente" });
       await carregarUsuarios();
-
       setMensagem("Usuário criado com sucesso!");
       setTimeout(() => setMensagem(null), 3000);
     } catch (error) {
@@ -107,8 +118,6 @@ export default function UsuariosPage() {
       await atualizarUsuario(editUserId, payload);
       setShowEdit(false);
       await carregarUsuarios();
-
-      // ✅ Mensagem de sucesso
       setMensagem("Usuário atualizado com sucesso!");
       setTimeout(() => setMensagem(null), 3000);
     } catch (error) {
@@ -117,100 +126,114 @@ export default function UsuariosPage() {
     }
   }
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-300">
         Carregando usuários...
       </div>
     );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-white">
       <Navbar onLogout={() => navigate("/")} />
 
-      {/* ✅ Toast simples */}
       {mensagem && (
-        <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
+        <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg">
           {mensagem}
         </div>
       )}
 
-      <main className="flex-1 p-8">
-        {/* topo padronizado */}
-        <div className="flex justify-between items-center mb-6">
+      {canManage ? (
+        <main className="flex-1 p-8">
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-semibold transition text-sm"
+            >
+              ← Voltar ao Dashboard
+            </button>
+
+            <button
+              onClick={() => setShowCreate(true)}
+              className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold transition text-sm"
+            >
+              + Adicionar Usuário
+            </button>
+          </div>
+
+          <h1 className="text-3xl font-bold mb-6">Usuários cadastrados</h1>
+
+          {erro && <p className="text-red-400 mb-4">{erro}</p>}
+
+          <div className="bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-slate-700 text-gray-300">
+                <tr>
+                  <th className="px-6 py-3 font-semibold">ID</th>
+                  <th className="px-6 py-3 font-semibold">Nome</th>
+                  <th className="px-6 py-3 font-semibold">Email</th>
+                  <th className="px-6 py-3 font-semibold">Tipo</th>
+                  <th className="px-6 py-3 font-semibold text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usuarios.map((u) => (
+                  <tr
+                    key={u.id}
+                    className="border-t border-slate-700 hover:bg-slate-700/50 transition"
+                  >
+                    <td className="px-6 py-3">{u.id}</td>
+                    <td className="px-6 py-3">{u.nome}</td>
+                    <td className="px-6 py-3">{u.email}</td>
+                    <td className="px-6 py-3 capitalize">{u.tipo}</td>
+                    <td className="px-6 py-3">
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => abrirEdicao(u)}
+                          className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(u.id)}
+                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded font-semibold"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+
+                {usuarios.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="text-center p-4 text-gray-400">
+                      Nenhum usuário encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </main>
+      ) : (
+        <main className="flex-1 p-8">
           <button
             onClick={() => navigate("/dashboard")}
-            className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-semibold transition text-sm"
+            className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-semibold transition text-sm mb-6"
           >
             ← Voltar ao Dashboard
           </button>
 
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-green-600 hover:bg-green-500 px-4 py-2 rounded font-semibold transition text-sm"
-          >
-            + Adicionar Usuário
-          </button>
-        </div>
+          <h1 className="text-3xl font-bold mb-6">Usuários cadastrados</h1>
+          <p className="text-red-400">
+            {erro || "Acesso negado: apenas administradores podem gerenciar usuários."}
+          </p>
+        </main>
+      )}
 
-        <h1 className="text-3xl font-bold mb-6">Usuários cadastrados</h1>
-        {erro && <p className="text-red-400 mb-4">{erro}</p>}
-
-        {/* tabela */}
-        <div className="bg-slate-800 rounded-lg shadow-lg overflow-hidden">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead className="bg-slate-700 text-gray-300">
-              <tr>
-                <th className="px-6 py-3 font-semibold">ID</th>
-                <th className="px-6 py-3 font-semibold">Nome</th>
-                <th className="px-6 py-3 font-semibold">Email</th>
-                <th className="px-6 py-3 font-semibold">Tipo</th>
-                <th className="px-6 py-3 font-semibold text-center">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuarios.map((u) => (
-                <tr
-                  key={u.id}
-                  className="border-t border-slate-700 hover:bg-slate-700/50 transition"
-                >
-                  <td className="px-6 py-3">{u.id}</td>
-                  <td className="px-6 py-3">{u.nome}</td>
-                  <td className="px-6 py-3">{u.email}</td>
-                  <td className="px-6 py-3 capitalize">{u.tipo}</td>
-                  <td className="px-6 py-3">
-                    <div className="flex gap-2 justify-center">
-                      <button
-                        onClick={() => abrirEdicao(u)}
-                        className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u.id)}
-                        className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded font-semibold"
-                      >
-                        Excluir
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-
-              {usuarios.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-center p-4 text-gray-400">
-                    Nenhum usuário encontrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
-
-      {/* Modal Criar */}
-      {showCreate && (
+      {canManage && showCreate && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 p-6 rounded-lg shadow-lg w-[420px]">
             <h2 className="text-xl font-semibold mb-4">Novo Usuário</h2>
@@ -276,8 +299,7 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      {/* Modal Editar */}
-      {showEdit && (
+      {canManage && showEdit && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 p-6 rounded-lg shadow-lg w-[420px]">
             <h2 className="text-xl font-semibold mb-4">Editar Usuário</h2>
@@ -312,8 +334,6 @@ export default function UsuariosPage() {
                 <option value="cliente">Cliente</option>
                 <option value="admin">Admin</option>
               </select>
-
-              {/* senha opcional */}
               <input
                 type="password"
                 placeholder="Nova senha (opcional)"

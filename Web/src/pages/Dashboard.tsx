@@ -49,7 +49,6 @@ export default function DashboardPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {/* Card Produtos */}
           <div className="bg-slate-800 p-6 rounded-xl shadow-md hover:shadow-lg transition">
             <h2 className="text-xl font-semibold mb-2">Produtos</h2>
             <p className="text-gray-400 mb-3">Gerencie seu estoque de produtos.</p>
@@ -60,8 +59,6 @@ export default function DashboardPage() {
               Acessar
             </button>
           </div>
-
-          {/* Card Vendas */}
           <div className="bg-slate-800 p-6 rounded-xl shadow-md hover:shadow-lg transition">
             <h2 className="text-xl font-semibold mb-2">Vendas</h2>
             <p className="text-gray-400 mb-3">Registre e visualize suas vendas.</p>
@@ -72,8 +69,6 @@ export default function DashboardPage() {
               Acessar
             </button>
           </div>
-
-          {/* Card Usuários */}
           <div className="bg-slate-800 p-6 rounded-xl shadow-md hover:shadow-lg transition">
             <h2 className="text-xl font-semibold mb-2">Usuários</h2>
             <p className="text-gray-400 mb-3">Administre usuários do sistema.</p>

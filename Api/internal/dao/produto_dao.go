@@ -46,8 +46,6 @@ func (p *ProdutoDAO) Criar(nome, descricao string, preco float64, estoque int) e
 	)
 	return err
 }
-
-// ✅ Atualizar produto
 func (p *ProdutoDAO) Atualizar(id int, nome, descricao string, preco float64, estoque int) error {
 	_, err := p.DB.Exec(
 		"UPDATE produtos SET nome = ?, descricao = ?, preco = ?, estoque = ? WHERE id = ?",
@@ -55,8 +53,6 @@ func (p *ProdutoDAO) Atualizar(id int, nome, descricao string, preco float64, es
 	)
 	return err
 }
-
-// ✅ Deletar produto
 func (p *ProdutoDAO) Deletar(id int) error {
 	_, err := p.DB.Exec("DELETE FROM produtos WHERE id = ?", id)
 	return err

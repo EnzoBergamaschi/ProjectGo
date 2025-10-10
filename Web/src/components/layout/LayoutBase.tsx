@@ -9,7 +9,7 @@ export default function LayoutBase() {
       <div className="flex flex-col flex-1">
         <Navbar onLogout={() => {}} />
         <main className="p-6 flex-1 overflow-y-auto">
-          <Outlet /> {/* Aqui o React Router renderiza cada página */}
+          <Outlet /> 
         </main>
       </div>
     </div>

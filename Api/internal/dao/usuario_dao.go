@@ -47,8 +47,6 @@ func (u *UsuarioDAO) Criar(nome, email, senhaHash, tipo string) error {
 	)
 	return err
 }
-
-// ✅ Novo método: Atualizar usuário existente
 func (u *UsuarioDAO) Atualizar(id int, nome, email, senhaHash, tipo string) error {
 	_, err := u.DB.Exec(
 		"UPDATE usuarios SET nome = ?, email = ?, senha_hash = ?, tipo = ? WHERE id = ?",
@@ -56,8 +54,6 @@ func (u *UsuarioDAO) Atualizar(id int, nome, email, senhaHash, tipo string) erro
 	)
 	return err
 }
-
-// ✅ Novo: atualiza sem mexer na senha
 func (u *UsuarioDAO) AtualizarSemSenha(id int, nome, email, tipo string) error {
 	_, err := u.DB.Exec(
 		"UPDATE usuarios SET nome = ?, email = ?, tipo = ? WHERE id = ?",
@@ -65,8 +61,6 @@ func (u *UsuarioDAO) AtualizarSemSenha(id int, nome, email, tipo string) error {
 	)
 	return err
 }
-
-// ✅ Novo método: Deletar usuário
 func (u *UsuarioDAO) Deletar(id int) error {
 	_, err := u.DB.Exec("DELETE FROM usuarios WHERE id = ?", id)
 	return err

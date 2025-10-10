@@ -18,10 +18,6 @@ type VendaHandler struct {
 func NovaVendaHandler(db *sql.DB) *VendaHandler {
 	return &VendaHandler{dao: dao.NovaVendaDAO(db)}
 }
-
-// =========================================================
-// LISTAR TODAS AS VENDAS
-// =========================================================
 func (h *VendaHandler) Listar(w http.ResponseWriter, r *http.Request) {
 	vendas, err := h.dao.Listar()
 	if err != nil {
@@ -31,10 +27,6 @@ func (h *VendaHandler) Listar(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(vendas)
 }
-
-// =========================================================
-// CRIAR VENDA (total sempre começa em 0)
-// =========================================================
 func (h *VendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		IDUsuario int    `json:"id_usuario"`
@@ -56,8 +48,6 @@ func (h *VendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	if !validStatuses[input.Status] {
 		input.Status = "pendente"
 	}
-
-	// Se o usuário não vier no body, pega do token JWT
 	if input.IDUsuario == 0 {
 		if userID, ok := auth.GetUserID(r); ok {
 			input.IDUsuario = userID
@@ -66,8 +56,6 @@ func (h *VendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	// Cria venda com total = 0
 	if err := h.dao.Criar(input.IDUsuario, 0, input.Status); err != nil {
 		http.Error(w, "Erro ao criar venda: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -76,10 +64,6 @@ func (h *VendaHandler) Criar(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Venda criada com sucesso"))
 }
-
-// =========================================================
-// ATUALIZAR VENDA (não mexe no total manualmente)
-// =========================================================
 func (h *VendaHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/vendas/")
 	id, err := strconv.Atoi(idStr)
@@ -117,10 +101,6 @@ func (h *VendaHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Venda atualizada com sucesso"))
 }
-
-// =========================================================
-// DELETAR VENDA
-// =========================================================
 func (h *VendaHandler) Deletar(w http.ResponseWriter, r *http.Request) {
 	idStr := strings.TrimPrefix(r.URL.Path, "/vendas/")
 	id, err := strconv.Atoi(idStr)

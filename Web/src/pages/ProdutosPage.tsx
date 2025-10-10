@@ -11,10 +11,10 @@ import {
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [novoProduto, setNovoProduto] = useState<Produto>({
+  const [novoProduto, setNovoProduto] = useState({
     nome: "",
-    preco: 0,
-    estoque: 0,
+    preco: "",
+    estoque: "",
   });
   const [editando, setEditando] = useState<Produto | null>(null);
   const [erro, setErro] = useState("");
@@ -37,13 +37,19 @@ export default function ProdutosPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const produtoFormatado = {
+        nome: novoProduto.nome,
+        preco: parseFloat(novoProduto.preco) || 0,
+        estoque: parseInt(novoProduto.estoque) || 0,
+      };
+
       if (editando) {
-        await atualizarProduto(editando.id!, novoProduto);
+        await atualizarProduto(editando.id!, produtoFormatado);
       } else {
-        await criarProduto(novoProduto);
+        await criarProduto(produtoFormatado);
       }
 
-      setNovoProduto({ nome: "", preco: 0, estoque: 0 });
+      setNovoProduto({ nome: "", preco: "", estoque: "" });
       setEditando(null);
       carregarProdutos();
     } catch (err) {
@@ -68,7 +74,6 @@ export default function ProdutosPage() {
       <Navbar onLogout={() => navigate("/")} />
 
       <main className="flex-1 p-8">
-        {/* Botão voltar ao dashboard */}
         <button
           onClick={() => navigate("/dashboard")}
           className="mb-6 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-semibold transition text-sm"
@@ -79,7 +84,6 @@ export default function ProdutosPage() {
         <h1 className="text-3xl font-bold mb-4">Gerenciar Produtos</h1>
         {erro && <p className="text-red-400 mb-4">{erro}</p>}
 
-        {/* Formulário */}
         <form
           onSubmit={handleSubmit}
           className="bg-slate-800 p-6 rounded-lg mb-8 shadow-lg space-y-4"
@@ -88,7 +92,6 @@ export default function ProdutosPage() {
             {editando ? "Editar Produto" : "Novo Produto"}
           </h2>
 
-          {/* Nome do produto */}
           <div>
             <label className="block mb-1 text-sm font-semibold text-gray-300">
               Nome do Produto
@@ -105,7 +108,6 @@ export default function ProdutosPage() {
             />
           </div>
 
-          {/* Preço */}
           <div>
             <label className="block mb-1 text-sm font-semibold text-gray-300">
               Preço (em R$)
@@ -116,17 +118,13 @@ export default function ProdutosPage() {
               placeholder="Ex: 199.90"
               value={novoProduto.preco}
               onChange={(e) =>
-                setNovoProduto({
-                  ...novoProduto,
-                  preco: Number(e.target.value),
-                })
+                setNovoProduto({ ...novoProduto, preco: e.target.value })
               }
               className="w-full p-2 rounded bg-slate-700 focus:outline-none"
               required
             />
           </div>
 
-          {/* Estoque */}
           <div>
             <label className="block mb-1 text-sm font-semibold text-gray-300">
               Quantidade em Estoque
@@ -136,17 +134,13 @@ export default function ProdutosPage() {
               placeholder="Ex: 10"
               value={novoProduto.estoque}
               onChange={(e) =>
-                setNovoProduto({
-                  ...novoProduto,
-                  estoque: Number(e.target.value),
-                })
+                setNovoProduto({ ...novoProduto, estoque: e.target.value })
               }
               className="w-full p-2 rounded bg-slate-700 focus:outline-none"
               required
             />
           </div>
 
-          {/* Botão principal */}
           <button
             type="submit"
             className={`${
@@ -159,7 +153,6 @@ export default function ProdutosPage() {
           </button>
         </form>
 
-        {/* Tabela */}
         <table className="w-full border-collapse bg-slate-800 rounded-lg shadow-lg">
           <thead>
             <tr className="bg-slate-700">
@@ -181,12 +174,17 @@ export default function ProdutosPage() {
                   <button
                     onClick={() => {
                       setEditando(p);
-                      setNovoProduto(p);
+                      setNovoProduto({
+                        nome: p.nome,
+                        preco: p.preco.toString(),
+                        estoque: p.estoque.toString(),
+                      });
                     }}
                     className="bg-yellow-500 hover:bg-yellow-400 px-3 py-1 rounded text-black font-semibold"
                   >
                     Editar
                   </button>
+
                   <button
                     onClick={() => handleDelete(p.id!)}
                     className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded font-semibold"
